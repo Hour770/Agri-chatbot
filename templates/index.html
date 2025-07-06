@@ -6,20 +6,27 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+
+  
+  <div class="top-bar-right">
+    {% if not session.get("username") %}
+      <a href="/login" class="btn">Login</a>
+      <a href="/signup" class="btn">Sign Up</a>
+    {% else %}
+      <div class="profile">
+        <img src="{{ url_for('static', filename='profile-icon.png') }}" class="profile-icon">
+        <span>{{ session['username'] }}</span>
+      </div>
+      <a href="{{ url_for('registration.logout') }}" class="btn">Logout</a>
+    {% endif %}
+  </div>
+
   <div class="sidebar">
     <div class="top-bar">
-      {% if not session.get("username") %}
-        <a href="/login" class="btn">Login</a>
-        <a href="/signup" class="btn">Sign Up</a>
-      {% else %}
-        <div class="profile">
-          <img src="{{ url_for('static', filename='profile-icon.png') }}" class="profile-icon">
-          <span>{{ session['username'] }}</span>
-        </div>
-        <a href="{{ url_for('registration.logout') }}" class="btn">Logout</a>
-      {% endif %}
-      <button id="new-chat-btn" class="btn">New Chat</button>
+      <h1 id="title">AgriBOT</h1>
+      <button id="new-chat-btn" class="btn"><img id="new-chat-btn-icon" src="../static/web-images/new-chat-icon.png" alt="new-button-icon"></button>
     </div>
+
     <div class="chat-history">
       {% for chat in chat_titles %}
         <div class="chat-item" onclick="loadChat({{ chat.chat_id }})">
@@ -111,5 +118,15 @@
     document.getElementById('new-chat-btn').addEventListener('click', newChat);
     window.addEventListener('load', newChat);
   </script>
+
+  <script>
+  const input = document.getElementById('user-input');
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault(); // Prevent default newline
+      sendMessage();      // Call your sendMessage function
+    }
+  });
+</script>
 </body>
 </html>
