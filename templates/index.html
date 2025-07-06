@@ -6,6 +6,29 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <div class="sidebar">
+    <div class="top-bar">
+      {% if not session.get("username") %}
+        <a href="/login" class="btn">Login</a>
+        <a href="/signup" class="btn">Sign Up</a>
+      {% else %}
+        <div class="profile">
+          <img src="{{ url_for('static', filename='profile-icon.png') }}" class="profile-icon">
+          <span>{{ session['username'] }}</span>
+        </div>
+        <a href="{{ url_for('registration.logout') }}" class="btn">Logout</a>
+      {% endif %}
+      <button id="new-chat-btn" class="btn">New Chat</button>
+    </div>
+    <div class="chat-history">
+      {% for chat in chat_titles %}
+        <div class="chat-item" onclick="loadChat({{ chat.chat_id }})">
+          {{ chat.title }}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
   <div class="chat-container">
     <div class="chat-header">Gemini AI Chat</div>
     <div class="chat-box" id="chat-box"></div>
@@ -20,8 +43,17 @@
       const msg = document.createElement('div');
       msg.className = sender;
       msg.innerText = text;
-      document.getElementById('chat-box').appendChild(msg);
-      document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+      const box = document.getElementById('chat-box');
+      box.appendChild(msg);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function newChat() {
+      // clear any active chat on server
+      await fetch('/new-chat', { method: 'POST' });
+      // reset UI
+      document.getElementById('chat-box').innerHTML = '';
+      document.getElementById('user-input').value = '';
     }
 
     async function sendMessage() {
@@ -33,17 +65,51 @@
       input.value = '';
 
       try {
-        const response = await fetch('/get-response', {
+        const res = await fetch('/new-message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message })
         });
-        const data = await response.json();
-        appendMessage('bot-message', data.response);
-      } catch (error) {
-        appendMessage('bot-message', "Error: Could not reach server.");
+        const data = await res.json();
+
+        // if this was the first message of a new chat, prepend sidebar entry
+        if (data.new_chat) {
+          const hist = document.querySelector('.chat-history');
+          const item = document.createElement('div');
+          item.className = 'chat-item';
+          item.innerText = data.title;
+          item.onclick = () => loadChat(data.chat_id);
+          hist.prepend(item);
+        }
+
+        appendMessage('bot-message', data.bot);
+      } catch (err) {
+        appendMessage('bot-message', 'Error: Could not reach server.');
       }
     }
+
+    async function loadChat(chatId) {
+      try {
+        const res = await fetch(`/load-chat/${chatId}`);
+        const data = await res.json();
+        const box = document.getElementById('chat-box');
+        box.innerHTML = '';
+        data.messages.forEach(m => {
+          appendMessage(m.sender === 'user' ? 'user-message' : 'bot-message', m.message);
+        });
+        // mark it active
+        await fetch('/set-active-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId })
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    document.getElementById('new-chat-btn').addEventListener('click', newChat);
+    window.addEventListener('load', newChat);
   </script>
 </body>
 </html>
