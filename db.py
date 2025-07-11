@@ -4,9 +4,9 @@ def get_connection():
     return pymysql.connect(
         host='localhost',
         user='root',
-        password='',
-        database='',
-        port=,
+        password='dara168',  
+        database='my_chat_app', 
+        port=3306,         
         cursorclass=pymysql.cursors.DictCursor
     )
 
@@ -54,3 +54,4 @@ def create_tables():
         print("Error creating tables:", e)
     finally:
         connection.close()
+        

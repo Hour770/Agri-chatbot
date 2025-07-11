@@ -56,21 +56,21 @@ def retrieve_context(query, top_k=5, boost_score=0.2):
 
 def build_prompt(query, context_chunks):
     context = "\n\n".join(context_chunks)
-    return f"""You are an agricultural assistant for Cambodia.
-Answer the following question using the provided context.
+    return f"""អ្នកគឺជជំនួយការផ្នែកកសិកម្មសម្រាប់ប្រទេសកម្ពុជា។
+អ្នកត្រូវឆ្លើយសំណួរខាងក្រោមដោយផ្អែកលើបរិបទដែលបានផ្ដល់ជូន។
 
-Remember that you can't answer based on your own understanding, you must 100% follow through our provided context. If in case you can't find any relative information
-from our context to answer the question, you should find the most closely related one to the question.
+***សូមចងចាំថាអ្នកមិនត្រូវឆ្លើយតាមចំណេះដឹងផ្ទាល់ខ្លួនទេ។ អ្នកត្រូវឆ្លើយតែអ្វីដែលមាននៅក្នុងបរិបទតែប៉ុណ្ណោះ។***
+បើសិនជាអ្នករកមិនឃើញព័ត៍មានដ៏ពាក់ព័ន្ធនឹងសំណួរនោះទេ សូមឆ្លើយតែអ្វីដែលពាក់ព័ន្ធជិតស្និទ្ធបំផុតបំផុតជាមួយនឹងសំណួរនោះ។
 
-Context:
+បរិបទ៖
 {context}
 
-Question: {query}
+សំណួរ៖ {query}
 
-Answer:"""
+ចម្លើយ៖"""
 
 # Gemini API setup
-genai.configure(api_key="AIzaSyCd_OYN8dgWEGnEb7PhDnMNyKQe7zvSs8o")
+genai.configure(api_key="AIzaSyD2V_GZIpxaGOI1JcEIuUTudxiTWPdk1ts")
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 def query_chatbot(user_query):
