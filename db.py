@@ -4,8 +4,8 @@ def get_connection():
     return pymysql.connect(
         host='localhost',
         user='root',
-        password='dara168',  
-        database='my_chat_app', 
+        password='',  
+        database='', 
         port=3306,         
         cursorclass=pymysql.cursors.DictCursor
     )
