@@ -3,7 +3,7 @@ def get_connection():
     return pymysql.connect(
         host='localhost',
         user='root',
-        password='hour012698594',  
+        password='',  
         database='user_database', 
         port=3306,         
         cursorclass=pymysql.cursors.DictCursor
