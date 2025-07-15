@@ -1,59 +1,29 @@
-import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 import google.generativeai as genai
+from load_database import load_database
 
-# Load embedding model
 embeddings_model = SentenceTransformer('distiluse-base-multilingual-cased')
-
-# Define alias replacements (extendable)
-alias_map = {
-    "ស្រូវស្បៃមង្គល": "ស្រូវដំណើបស្បៃមង្គល",
-    # Add more known synonyms here if needed
-}
-
-def normalize_query(query):
-    """Replace known aliases to ensure consistent search"""
-    for k, v in alias_map.items():
-        if k in query:
-            return query.replace(k, v)
-    return query
 
 def load_chunks_from_file(path):
     with open(path, "r", encoding="utf-8") as f:
         text = f.read()
-
-    raw_chunks = text.split('--- Chunk')[1:]
+        
+    # Split on "--- Chunk"
+    raw_chunks = text.split('--- Chunk')[1:]  # skip the header before first chunk
     chunks = ["--- Chunk" + chunk.strip() for chunk in raw_chunks if chunk.strip()]
     return chunks
 
-# Load FAISS index and chunks at startup
-index = faiss.read_index('khmer_agri_index.faiss')
-chunks = load_chunks_from_file('all_chunks.txt')
-chunk_embeddings = embeddings_model.encode(chunks, normalize_embeddings=True)
+# Load your saved FAISS index and chunk list
+index = load_database()
+chunks = load_chunks_from_file('/Users/cheamenghour/Documents/Cambodia Agriculture/All_chunks/all_chunks.txt')
 
-def retrieve_context(query, top_k=5, boost_score=0.2):
-    query = normalize_query(query)
-    query_embedding = embeddings_model.encode([query], normalize_embeddings=True)
-
-    # Perform FAISS semantic search
+def retrieve_context(query, top_k=5):
+    query_embedding = embeddings_model.encode([query])
     D, I = index.search(np.array(query_embedding), top_k)
-    results = []
+    return [chunks[i] for i in I[0]]
 
-    for i, idx in enumerate(I[0]):
-        score = 1 - D[0][i]  # Convert L2 distance to similarity
-        chunk = chunks[idx]
-
-        # Boost if query text appears directly in chunk
-        if query in chunk or any(part in chunk for part in query.split()):
-            score += boost_score
-
-        results.append((chunk, score))
-
-    # Sort and return top_k chunks
-    results.sort(key=lambda x: x[1], reverse=True)
-    return [chunk for chunk, _ in results[:top_k]]
-
+# Create chat prompt 
 def build_prompt(query, context_chunks):
     context = "\n\n".join(context_chunks)
     return f"""អ្នកគឺជជំនួយការផ្នែកកសិកម្មសម្រាប់ប្រទេសកម្ពុជា។
@@ -69,8 +39,11 @@ def build_prompt(query, context_chunks):
 
 ចម្លើយ៖"""
 
-# Gemini API setup
-genai.configure(api_key="AIzaSyD2V_GZIpxaGOI1JcEIuUTudxiTWPdk1ts")
+# Replace with your actual Gemini API key
+API_KEY = "AIzaSyCd_OYN8dgWEGnEb7PhDnMNyKQe7zvSs8o"  
+genai.configure(api_key=API_KEY)
+
+# Load the Gemini model
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 def query_chatbot(user_query):
