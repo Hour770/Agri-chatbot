@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from genai_interface import query_chatbot
+from chat import query_chatbot
 
 app = Flask(__name__)
 

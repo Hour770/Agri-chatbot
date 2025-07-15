@@ -1,4 +1,4 @@
-import faiss
+from load_database import load_database
 import numpy as np
 from sentence_transformers import SentenceTransformer
 import google.generativeai as genai
@@ -28,9 +28,9 @@ def load_chunks_from_file(path):
     return chunks
 
 # Load FAISS index and chunks at startup
-index = faiss.read_index('khmer_agri_index.faiss')
-chunks = load_chunks_from_file('all_chunks.txt')
-chunk_embeddings = embeddings_model.encode(chunks, normalize_embeddings=True)
+index = load_database()
+chunks = load_chunks_from_file('/Users/cheamenghour/Documents/Cambodia Agriculture/All_chunks/all_chunks.txt')
+
 
 def retrieve_context(query, top_k=5, boost_score=0.2):
     query = normalize_query(query)
