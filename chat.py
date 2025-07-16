@@ -40,7 +40,7 @@ def build_prompt(query, context_chunks):
 ចម្លើយ៖"""
 
 # Replace with your actual Gemini API key
-API_KEY = "AIzaSyCd_OYN8dgWEGnEb7PhDnMNyKQe7zvSs8o"  
+API_KEY = "AIzaSyAucSXhipwRhBjbrPJZ7-foXWwq8sc87cg"  
 genai.configure(api_key=API_KEY)
 
 # Load the Gemini model

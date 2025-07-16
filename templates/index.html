@@ -1,49 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Gemini Chatbot</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <div class="chat-container">
-    <div class="chat-header">Gemini AI Chat</div>
-    <div class="chat-box" id="chat-box"></div>
-    <div class="chat-input">
-      <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
-      <button onclick="sendMessage()">Send</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agri-Chatbot</title>
+
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='web-images/agribot-logo.png') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+  </head>
+  <body class="chat-layout aurora-background">
+    <div class="sidebar">
+      <div class="top-bar">
+        <img
+          src="{{ url_for('static', filename='web-images/agribot-logo.png') }}"
+          alt="Agri-Tech Logo"
+          id="sidebar-logo"
+        />
+
+        <button id="new-chat-btn" class="btn" title="Start a New Chat">
+          <img
+            id="new-chat-btn-icon"
+            src="{{ url_for('static', filename='web-images/new-chat-icon.png') }}"
+            alt="New Chat Icon"
+          />
+        </button>
+      </div>
+
+      <div class="chat-history">
+        {% for chat in chat_titles %}
+        <div
+          class="chat-item"
+          data-chat-id="{{ chat.chat_id }}"
+          onclick="loadChat('{{ chat.chat_id }}')"
+        >
+          <div class="title-wrapper">
+            <span class="chat-title-text">{{ chat.title }}</span>
+          </div>
+          <button
+            class="edit-chat-btn"
+            onclick="editChatTitle(event, '{{ chat.chat_id }}')"
+          >
+            Edit
+          </button>
+        </div>
+        {% endfor %} {% if not chat_titles %}
+        <p class="no-chats-message">Start a new chat to see your history!</p>
+        {% endif %}
+      </div>
     </div>
-  </div>
 
-  <script>
-    function appendMessage(sender, text) {
-      const msg = document.createElement('div');
-      msg.className = sender;
-      msg.innerText = text;
-      document.getElementById('chat-box').appendChild(msg);
-      document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
-    }
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="chat-header-title">Agri-ChatBot</div>
+        {% if session.get("username") %}
+        <div class="user-controls">
+          <a href="{{ url_for('registration.logout') }}" class="btn logout-btn"
+            >Log out</a
+          >
+        </div>
+        {% endif %}
+      </div>
 
-    async function sendMessage() {
-      const input = document.getElementById('user-input');
-      const message = input.value.trim();
-      if (!message) return;
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %} {% endwith %}
 
-      appendMessage('user-message', message);
-      input.value = '';
+      <div class="chat-box" id="chat-box">
+        <div class="bot-message initial-message">
+          Welcome to Agri-Chatbot! How can I help you with your farming today?
+        </div>
+      </div>
 
-      try {
-        const response = await fetch('/get-response', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message })
-        });
-        const data = await response.json();
-        appendMessage('bot-message', data.response);
-      } catch (error) {
-        appendMessage('bot-message', "Error: Could not reach server.");
-      }
-    }
-  </script>
-</body>
+      <div class="chat-input">
+        <input
+          type="text"
+          id="user-input"
+          placeholder="Ask Agri-Chatbot a question..."
+          autocomplete="on"
+        />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </body class="chat-layout">
 </html>
