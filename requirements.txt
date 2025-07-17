@@ -1,2 +1,7 @@
 Flask==2.3.3
 gunicorn
+numpy 
+sentence_transformers
+google.generativeai
+contextlib
+pymysql
