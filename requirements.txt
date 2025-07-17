@@ -3,5 +3,5 @@ gunicorn
 numpy 
 sentence_transformers
 google.generativeai
-contextlib
+contextlib2
 pymysql
